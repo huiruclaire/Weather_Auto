@@ -73,12 +73,6 @@ Even easier: open the newest file in the `logs` folder. Every run records the
 row count, e.g. `'Data' (sheet 'Data'): 1561 rows`. A full count (roughly
 1,500+) means success; only a handful of rows means it was cut short.
 
-## ⚠️ One important rule
-
-Your PC must be **turned on and logged in** at 8:00 AM.
-- Screen **locked** is fine. ✅
-- **Logged out / signed out / shut down** will NOT work. ❌
-
 ## The files
 
 | File | What it is |
@@ -95,6 +89,23 @@ Your PC must be **turned on and logged in** at 8:00 AM.
 
 The exported pictures (`Weather_latest.png` + dated copies) are saved to the
 folder set by `OUTPUT_DIR` in `config_local.py`, not inside the project folder.
+
+## Setting it up on another PC
+
+Requires **Windows**, **Microsoft Excel**, and **Python 3.12+** installed.
+
+1. Clone the repo:
+   `git clone https://github.com/huiruclaire/Weather_Auto.git`
+2. Create the virtual environment and install the libraries:
+   ```
+   python -m venv venv
+   venv\Scripts\python -m pip install -r requirements.txt
+   ```
+3. Copy `config_local.example.py` to `config_local.py` and fill in your real
+   workbook path and image-output folder.
+4. Test it (see below).
+5. Schedule it: create a Windows Task Scheduler task that runs `run_refresh.bat`
+   daily at your chosen time, set to **"Run only when user is logged on"**.
 
 ## Testing it yourself (optional)
 
