@@ -1,0 +1,34 @@
+# ---- Python virtual environment (never commit; it's machine-specific & huge) ----
+venv/
+.venv/
+env/
+
+# ---- Python cache / build artifacts ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# ---- Private, machine-specific paths (keep OFF a public repo) ----
+# The real workbook path + image folder live here; commit only the .example version.
+config_local.py
+
+# ---- This project's generated / private data (do NOT upload) ----
+# backups/ = full copies of the real workbook (business data)
+# logs/    = run logs
+# output/  = any locally exported images
+backups/
+logs/
+output/
+
+# Excel temporary "lock" files (created when a workbook is open)
+~$*.xls*
+*.tmp
+
+# ---- Editor / OS clutter ----
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+*.swp

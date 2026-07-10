@@ -1,0 +1,7 @@
+# Weather_Auto dependencies
+# pywin32 lets Python control Excel (open, refresh, save, close) via COM automation.
+pywin32==306
+# PyMuPDF renders the exported PDF of the cells into a PNG image.
+PyMuPDF==1.24.9
+# Pillow trims the white border off the exported image.
+Pillow==10.4.0
