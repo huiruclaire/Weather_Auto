@@ -122,3 +122,25 @@ close. Then open the newest file in the `logs` folder to see the result.
 4. Make sure the PC was on and logged in at 8:00 AM.
 5. Make sure the workbook still has **Enable Content** trusted (a "Trusted
    Document"). If that trust is ever reset, the data connections won't run.
+
+## Running unattended (the "logged-on" requirement)
+
+The refresh drives Excel through automation, which needs a **logged-on
+interactive session** — a *locked* screen is fine, but *signed out* or *shut
+down* is not. So the job only runs if a session is alive at 8:00 AM.
+
+**Common failure: overnight reboots.** If the PC restarts overnight (e.g. for
+Windows updates) it logs you out, and the next morning's run is silently
+skipped. Note that **"Run whether the user is logged on or not"** in Task
+Scheduler is *not* a reliable fix — Excel automation misbehaves without an
+interactive desktop.
+
+**The robust fix is auto-login:** the PC signs back into the account
+automatically after any reboot, so a session is always ready by 8:00 AM.
+Reboots then become harmless and patching is unaffected. Optionally pair it
+with auto-lock-on-idle so the machine stays locked-but-logged-on.
+
+> On a managed/company PC, enabling auto-login needs **administrator rights**,
+> so it may have to be requested from IT. Prefer asking IT for auto-login over
+> asking them to stop the overnight reboots — the latter fights the update
+> cycle and only works if you also always *lock* instead of signing out.
