@@ -34,6 +34,16 @@ LOG_DIR = Path(__file__).resolve().parent / "logs"
 # this is set to 10 minutes to leave comfortable headroom on a slow day.
 REFRESH_TIMEOUT_SECONDS = 600
 
+# --- Force-fresh downloads --------------------------------------------------
+# Power Query keeps an on-disk cache of web responses under
+# %LOCALAPPDATA%\Microsoft\Office\<ver>\PowerQuery\Cache. If it is NOT cleared,
+# a daily refresh can silently serve yesterday's cached pages -- finishing in
+# ~10 seconds with STALE data instead of doing a real ~5-minute download.
+# Clearing it before each run forces Power Query to actually re-download.
+# (This is a cache shared by all Power Query workbooks for this user; clearing
+# it just makes them re-download next time -- harmless.)
+CLEAR_POWERQUERY_CACHE = True
+
 # --- Backups ---------------------------------------------------------------
 # Every run copies the workbook here BEFORE refreshing, so you always have the
 # last-known-good version. Default: a "backups" folder next to this script.

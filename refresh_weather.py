@@ -11,8 +11,10 @@ Beginner note: you normally never run this by double-clicking. Task Scheduler
 runs it for you. But you CAN test it manually -- see README.md.
 """
 
+import os
 import sys
 import gc
+import glob
 import time
 import shutil
 import datetime
@@ -43,6 +45,49 @@ def running_excel_pids():
     except Exception:
         pass
     return pids
+
+
+def clear_powerquery_cache():
+    """Delete Power Query's on-disk web cache so the refresh really re-downloads.
+
+    Power Query caches web responses under
+    %LOCALAPPDATA%\\Microsoft\\Office\\<ver>\\PowerQuery\\Cache. Left in place, a
+    daily RefreshAll can serve yesterday's cached pages -- completing in seconds
+    with STALE data -- instead of fetching live. We clear it BEFORE launching
+    Excel (so nothing has the files open); Power Query safely rebuilds the cache
+    by downloading afresh. A clear problem is logged but never stops the run.
+    """
+    if not getattr(config, "CLEAR_POWERQUERY_CACHE", True):
+        return
+
+    local = os.environ.get("LOCALAPPDATA", "")
+    if not local:
+        logging.warning("Cannot clear Power Query cache -- LOCALAPPDATA not set.")
+        return
+
+    cache_dirs = glob.glob(
+        os.path.join(local, "Microsoft", "Office", "*", "PowerQuery", "Cache")
+    )
+    if not cache_dirs:
+        logging.info("No Power Query cache folder found (nothing to clear).")
+        return
+
+    removed = failed = 0
+    for cache_dir in cache_dirs:
+        for entry in os.listdir(cache_dir):
+            path = os.path.join(cache_dir, entry)
+            try:
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
+                removed += 1
+            except Exception:
+                failed += 1
+    logging.info(
+        "Cleared Power Query cache: %d item(s) removed%s (forces a live download).",
+        removed, f", {failed} could not be deleted" if failed else "",
+    )
 
 
 def backup_workbook():
@@ -232,6 +277,20 @@ def refresh_workbook():
     logging.info("Opening workbook: %s", config.WORKBOOK_PATH)
     workbook = excel.Workbooks.Open(config.WORKBOOK_PATH, UpdateLinks=0)
 
+    # Enable "Fast Combine" (ignore Power Query privacy levels) for this
+    # workbook. The Data query reads its URL list from a sheet table and feeds
+    # those URLs to the web -- combining two sources. Power Query's privacy
+    # firewall BLOCKS that ("specify a privacy level for each data source"),
+    # which under DisplayAlerts=False fails silently and leaves the OLD data in
+    # place (a fast, stale no-op). FastCombine tells Power Query to allow the
+    # combine so the web download actually runs. Set every run so it holds even
+    # if the workbook is ever re-saved without it.
+    try:
+        workbook.Queries.FastCombine = True
+        logging.info("FastCombine ENABLED (ignore Power Query privacy levels).")
+    except Exception:
+        logging.warning("Could not set FastCombine -- privacy firewall may block the refresh.")
+
     # Force every data connection (including Power Query) to refresh in the
     # FOREGROUND. When BackgroundQuery is False, RefreshAll blocks until the
     # download has actually finished -- instead of returning immediately and
@@ -343,6 +402,10 @@ def main():
 
     # Always take a backup first, so a bad refresh can never lose good data.
     backup_workbook()
+
+    # Clear Power Query's web cache so RefreshAll actually re-downloads instead
+    # of silently serving yesterday's cached pages. Done before Excel launches.
+    clear_powerquery_cache()
 
     # COM must be initialised on this thread before talking to Excel.
     pythoncom.CoInitialize()

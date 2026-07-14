@@ -29,6 +29,7 @@ output/
 # ---- Editor / OS clutter ----
 .vscode/
 .idea/
+*.code-workspace
 Thumbs.db
 Desktop.ini
 *.swp
